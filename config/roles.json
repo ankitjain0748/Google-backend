@@ -1,0 +1,47 @@
+{
+    "roles": [
+      {
+        "name": "admin",
+        "permissions": [
+          "create_account",
+          "create-shipment",
+          "view-shipment",
+          "update-shipment",
+          "read_record"
+        ]
+      },
+      {
+        "name": "shipper",
+        "permissions": [
+          "create_account",
+          "create-shipment",
+          "view-shipment",
+          "update-shipment",
+          "read_record"
+        ]
+      },
+      {
+        "name": "broker",
+        "permissions": [
+          "create_account",
+          "update-shipment",
+          "view-shipment"
+        ]
+      },
+      {
+        "name": "carrier",
+        "permissions": [
+          "create_account",
+          "update-shipment",
+          "view-shipment"
+        ]
+      },
+      {
+        "name": "driver",
+        "permissions": [
+          "read_record",
+          "view-shipment"
+        ]
+      }
+    ]
+  }
