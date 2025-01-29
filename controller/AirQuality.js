@@ -106,3 +106,42 @@ exports.getSolarData = async (req, res) => {
   }
 };
 
+
+
+
+// exports.getPollenData = async (req, res) => {
+//     const { latitude, longitude } = req.query;
+
+//     // Check if latitude and longitude are provided
+//     if (!latitude || !longitude) {
+//         return res.status(400).render('index', { error: 'Please provide valid latitude and longitude.' });
+//     }
+
+//     try {
+//         // Request to pollen data provider API
+//         const response = await axios.get(`https://api.example-pollen-provider.com/v1/pollen?lat=${latitude}&lon=${longitude}`, {
+//             headers: {
+//                 'Authorization': `Bearer ${apiKey}`
+//             }
+//         });
+
+//         // Send response in JSON format with the status code 200
+//         return res.status(200).json({
+//             location: { latitude, longitude },
+//             pollenData: response.data
+//         });
+
+//     } catch (error) {
+//         // Log the error for debugging
+//         console.error('Error fetching pollen data:', error.message);
+
+//         // Check if the error has a response from the server
+//         if (error.response) {
+//             return res.status(error.response.status).json({ error: error.response.data });
+//         } else {
+//             return res.status(500).json({ error: 'Could not retrieve pollen data. Please try again later.' });
+//         }
+//     }
+// };
+
+
