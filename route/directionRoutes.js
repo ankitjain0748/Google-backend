@@ -4,4 +4,6 @@ const directionsController = require('../controller/directionsController');
 
 router.post('/cordintors', directionsController.getDirections);
 
+router.post("/location" , directionsController.LocationSearch)
+
 module.exports = router;

@@ -61,4 +61,28 @@ exports.getDirections = async (req, res) => {
 };
 
 
+exports.LocationSearch = async (req, res) => {
+    try {
+      console.log("req.body", req.body);
+      const { input } = req.body;
+      console.log("input", input);
+      if (!input) {
+        return res.status(400).json({ error: "Input query is required" });
+      }
+  
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
+  
+      const response = await axios.get(url);
+      console.log("response.data", response.data);
+  
+      res.json(response.data.predictions);
+    } catch (error) {
+      console.error("Error fetching autocomplete results:", error);
+      res.status(500).json({ error: "Error fetching autocomplete results" });
+    }
+  };
+  
+
+
 
