@@ -2,37 +2,6 @@ const axios = require('axios');
 const catchAsync = require('../utils/catchAsync');
 const logger = require('../utils/Logger');
 
-exports.getPlaceDetails = catchAsync(
-    async (req, res) => {
-        const { placeId } = req.params;
-        if (!placeId) {
-            return res.status(400).json({ error: 'Place ID is required' });
-        }
-        try {
-            const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-            const placeUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${API_KEY}`;
-            const placeResponse = await axios.get(placeUrl);
-            if (placeResponse.data.status !== 'OK') {
-                throw new Error(placeResponse.data.error_message || 'Failed to fetch place details');
-            }
-            const placeDetails = placeResponse.data.result;
-            const photoUrls = placeDetails.photos ? placeDetails.photos.map(photo => {
-                return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${API_KEY}`;
-            }) : [];
-            placeDetails.photoUrls = photoUrls;
-            const response = {
-                success: true,
-                data: placeDetails,
-            };
-            return res.status(200).json(response);
-        } catch (error) {
-            console.error("Error:", error); // Log the error for debugging
-            logger.error("Error in place controller api:", error)
-            return res.status(500).json({ success: false, error: error.message });
-        }
-    }
-);
-
 
 exports.searchPlaces = catchAsync(
     async (req, res) => {
@@ -57,6 +26,7 @@ exports.searchPlaces = catchAsync(
         }
     }
 );
+
 
 exports.nearbySearch = catchAsync(async (req, res) => {
     const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -91,5 +61,40 @@ exports.nearbySearch = catchAsync(async (req, res) => {
         res.status(500).send('Error performing nearby search');
     }
 });
+
+exports.getPlaceDetails = catchAsync(
+    async (req, res) => {
+        const { placeId } = req.params;
+        if (!placeId) {
+            return res.status(400).json({ error: 'Place ID is required' });
+        }
+        try {
+            const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+            const placeUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${API_KEY}`;
+            const placeResponse = await axios.get(placeUrl);
+            if (placeResponse.data.status !== 'OK') {
+                throw new Error(placeResponse.data.error_message || 'Failed to fetch place details');
+            }
+            const placeDetails = placeResponse.data.result;
+            const photoUrls = placeDetails.photos ? placeDetails.photos.map(photo => {
+                return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${API_KEY}`;
+            }) : [];
+            placeDetails.photoUrls = photoUrls;
+            const response = {
+                success: true,
+                data: placeDetails,
+            };
+            return res.status(200).json(response);
+        } catch (error) {
+            console.error("Error:", error); // Log the error for debugging
+            logger.error("Error in place controller api:", error)
+            return res.status(500).json({ success: false, error: error.message });
+        }
+    }
+);
+
+
+
+
 
 

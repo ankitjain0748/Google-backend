@@ -1,17 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const PlaceController = require('../controller/PlaceController');
-const { getLocation } = require('../controller/locationController');
+const { getLocation ,SerachMalitpleLocation } = require('../controller/locationController');
 const { apiKeygetAirQuality, getRoad  , getSolarData, getPollenData} = require('../controller/AirQuality');
 
+router.post('/searchPlaces', PlaceController.searchPlaces);
+router.post('/nearbySearch', PlaceController.nearbySearch);
 router.get('/placesDetilas/:placeId', PlaceController.getPlaceDetails);
 
-router.post('/searchPlaces', PlaceController.searchPlaces);
-
-router.post('/nearbySearch', PlaceController.nearbySearch);
 
 // Get Address 
-router.post('/address', getLocation);
+router.post('/address', SerachMalitpleLocation);
 
 // Air Quality
 

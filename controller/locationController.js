@@ -49,7 +49,6 @@ const getLocation = async (req, res) => {
   }
 };
 
-
 const SerachMalitpleLocation = async (req, res) => {
   const { address } = req.body;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY; 
@@ -59,15 +58,15 @@ const SerachMalitpleLocation = async (req, res) => {
   }
 
   
-  const formattedAddress = `${address.street_address}, ${address.nearby}, ${address.district}, ${address.city}, ${address.state}, ${address.pin}`;
+  // const formattedAddress = `${address.street_address}, ${address.nearby}, ${address.district}, ${address.city}, ${address.state}, ${address.pin}`;
 
   try {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json`,
       {
         params: {
-          address: formattedAddress,
-          key: apiKey,
+          address: address,
+          key: AIzaSyAZdS5ILSddnuGPqz1TbLNd24wApLunFGU,
         },
       }
     );
@@ -98,4 +97,4 @@ const SerachMalitpleLocation = async (req, res) => {
   }
 };
 
-module.exports = { getLocation };
+module.exports = { getLocation , SerachMalitpleLocation };

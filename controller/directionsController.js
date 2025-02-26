@@ -1,7 +1,6 @@
 const axios = require('axios');
 const directionmodels = require('../model/direction');
 
-
 exports.getDirections = async (req, res) => {
     const { StartLocation, EndLocation, CurrentLocation } = req.body; // Expect data in request body
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -60,7 +59,6 @@ exports.getDirections = async (req, res) => {
     }
 };
 
-
 exports.LocationSearch = async (req, res) => {
     try {
       console.log("req.body", req.body);
@@ -70,7 +68,7 @@ exports.LocationSearch = async (req, res) => {
         return res.status(400).json({ error: "Input query is required" });
       }
   
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      const apiKey = "AIzaSyAZdS5ILSddnuGPqz1TbLNd24wApLunFGU" ;
       const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
   
       const response = await axios.get(url);

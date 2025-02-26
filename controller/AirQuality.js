@@ -84,24 +84,18 @@ const apiKey =process.env.GOOGLE_MAPS_API_KEY;
 
 exports.getSolarData = async (req, res) => {
   const { latitude, longitude } = req.query;
-
-  // Check if latitude and longitude are provided
   if (!latitude || !longitude) {
     return res.status(400).render('index', { error: 'Please provide valid latitude and longitude.' });
   }
-
   try {
-    // Request to Google Solar API
     const response = await axios.get(`https://solar.googleapis.com/v1/roof:estimateSolarPotential?latlng=${latitude},${longitude}&key=${apiKey}`);
 
-    // Send response in JSON format with the status code 200
     return res.status(200).json({
       location: { latitude, longitude },
       solarData: response.data,
     });
 
   } catch (error) {
-    // If error occurs, send a 500 response with error message in JSON format
     return res.status(500).json({ error: 'Could not retrieve solar data. Please try again later.' });
   }
 };
