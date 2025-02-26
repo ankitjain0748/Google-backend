@@ -66,7 +66,7 @@ const SerachMalitpleLocation = async (req, res) => {
       {
         params: {
           address: address,
-          key: AIzaSyAZdS5ILSddnuGPqz1TbLNd24wApLunFGU,
+          key: apiKey,
         },
       }
     );

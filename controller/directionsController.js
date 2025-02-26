@@ -68,7 +68,7 @@ exports.LocationSearch = async (req, res) => {
         return res.status(400).json({ error: "Input query is required" });
       }
   
-      const apiKey = "AIzaSyAZdS5ILSddnuGPqz1TbLNd24wApLunFGU" ;
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY ;
       const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
   
       const response = await axios.get(url);
