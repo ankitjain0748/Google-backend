@@ -27,7 +27,6 @@ exports.searchPlaces = catchAsync(
     }
 );
 
-
 exports.nearbySearch = catchAsync(async (req, res) => {
     const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
