@@ -97,4 +97,52 @@ const SerachMalitpleLocation = async (req, res) => {
   }
 };
 
-module.exports = { getLocation , SerachMalitpleLocation };
+
+const SearchMultipleLocations = async (req, res) => {
+  const { address } = req.body;
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!address) {
+    return res.status(400).json({ message: 'Address is required' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json`,
+      {
+        params: {
+          address: address,
+          key: apiKey,
+        },
+      }
+    );
+
+    const { results } = response.data;
+
+    if (results && results.length > 0) {
+      const locations = results.map((result) => {
+        const location = result.geometry.location;
+        const formattedAddress = result.formatted_address;
+
+        return {
+          formattedAddress,
+          latitude: location.lat,
+          longitude: location.lng,
+        };
+      });
+
+      return res.status(200).json({
+        count: locations.length,
+        locations,
+      });
+    } else {
+      return res.status(404).json({ message: 'No matching locations found' });
+    }
+  } catch (error) {
+    console.error('Error fetching location:', error.message);
+    return res.status(500).json({ message: 'Error fetching location data' });
+  }
+};
+
+
+module.exports = { getLocation , SerachMalitpleLocation  , SearchMultipleLocations};
