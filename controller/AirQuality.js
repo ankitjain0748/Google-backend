@@ -3,13 +3,11 @@ const axios = require('axios');
 exports.apiKeygetAirQuality = async (req, res) => {
     const { lat, lon } = req.body;
     console.log("Request Body:", req.body);
-
     if (!lat || !lon) {
         return res.status(400).json({ error: 'Please provide latitude (lat) and longitude (lon).' });
     }
-
     try {
-        const apiKey =process.env.GOOGLE_MAPS_API_KEY;  // Use OpenWeather API key here
+        const apiKey = process.env.OPENWEATHER_API_KEY;  // Use OpenWeather API key here
         if (!apiKey) {
             return res.status(500).json({ error: 'API key not provided.' });
         }
@@ -46,8 +44,8 @@ exports.apiKeygetAirQuality = async (req, res) => {
 
 exports.getRoad = async (req, res) => {
     const { points } = req.query;
-    console.log('Points:', points); // Log the input points
-    const formattedPoints = points.split('|').join('|'); // Prepare the points string
+    console.log('Points:', points); 
+    const formattedPoints = points.split('|').join('|'); 
     try {
         const response = await axios.get('https://roads.googleapis.com/v1/nearestRoads', {
             params: {
@@ -79,11 +77,15 @@ exports.getRoad = async (req, res) => {
         }
     }
 };
-const apiKey =process.env.GOOGLE_MAPS_API_KEY; 
+
+
+
 
 
 exports.getSolarData = async (req, res) => {
   const { latitude, longitude } = req.query;
+const apiKey =process.env.GOOGLE_MAPS_API_KEY; 
+
   if (!latitude || !longitude) {
     return res.status(400).render('index', { error: 'Please provide valid latitude and longitude.' });
   }

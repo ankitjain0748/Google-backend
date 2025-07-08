@@ -1,17 +1,14 @@
 
-const axios = require('axios'); 
+const axios = require('axios');
 
 const getLocation = async (req, res) => {
   const { address } = req.body;
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY; 
-
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!address) {
     return res.status(400).json({ message: 'Address is required' });
   }
-
-  
-  const formattedAddress = `${address.street_address}, ${address.nearby}, ${address.district}, ${address.city}, ${address.state}, ${address.pin}`;
-
+  const formattedAddress = `${address.street_address}, ${address.nearby}, ${address.district},
+   ${address.city}, ${address.state}, ${address.pin}`;
   try {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json`,
@@ -22,7 +19,6 @@ const getLocation = async (req, res) => {
         },
       }
     );
-
     const { results } = response.data;
 
     if (results && results.length > 0) {
@@ -51,15 +47,11 @@ const getLocation = async (req, res) => {
 
 const SerachMalitpleLocation = async (req, res) => {
   const { address } = req.body;
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY; 
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   if (!address) {
     return res.status(400).json({ message: 'Address is required' });
   }
-
-  
-  // const formattedAddress = `${address.street_address}, ${address.nearby}, ${address.district}, ${address.city}, ${address.state}, ${address.pin}`;
-
   try {
     const response = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json`,
@@ -145,4 +137,4 @@ const SearchMultipleLocations = async (req, res) => {
 };
 
 
-module.exports = { getLocation , SerachMalitpleLocation  , SearchMultipleLocations};
+module.exports = { getLocation, SerachMalitpleLocation, SearchMultipleLocations };
