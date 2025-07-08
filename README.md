@@ -12,3 +12,4 @@ Rather than working with raw points, this API helps applications snap those poin
 10 .☀️ getSolarData API: Estimate Solar Potential for Any Rooftop ,The getSolarData API uses the Google Solar API to calculate the solar energy potential of a building rooftop based on geographic coordinates (latitude and longitude). It returns powerful insights that help homeowners, solar companies, or energy platforms assess whether a specific location is suitable for solar panel installation.
 
 https://docs.google.com/document/d/1O5CXnK8p8N4SBpEbLkOA_M8U6daKjsrPbKiGqF5iuYQ/edit?tab=t.0#heading=h.628az1xg1cc1
+https://github.com/ankitjain0748/Google-backend.git
