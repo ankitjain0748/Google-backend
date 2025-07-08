@@ -9,6 +9,7 @@
 8. 🌫️Get Real-Time Air Quality Data by Coordinates, The getAirQuality API fetches current air pollution levels for any location using geographic coordinates (latitude and longitude). It uses the OpenWeather Air Pollution API, which provides detailed data on common pollutants like PM2.5, PM10, NO₂, and more.
 9. 🛣️ getRoad API: Snap GPS Coordinates to the Nearest Roads, The getRoad API uses the Google Roads API to take raw GPS coordinates and return the nearest navigable road segments. This is extremely useful for refining location data — especially when GPS signals are imprecise or slightly off-road.
 Rather than working with raw points, this API helps applications snap those points to the road network, making it ideal for route mapping, tracking systems, or vehicle movement correction.
+
 10 .☀️ getSolarData API: Estimate Solar Potential for Any Rooftop ,The getSolarData API uses the Google Solar API to calculate the solar energy potential of a building rooftop based on geographic coordinates (latitude and longitude). It returns powerful insights that help homeowners, solar companies, or energy platforms assess whether a specific location is suitable for solar panel installation.
 
 
