@@ -45,7 +45,7 @@ const getLocation = async (req, res) => {
   }
 };
 
-const SerachMalitpleLocation = async (req, res) => {
+const SearchMultipleLocation = async (req, res) => {
   const { address } = req.body;
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -137,4 +137,4 @@ const SearchMultipleLocations = async (req, res) => {
 };
 
 
-module.exports = { getLocation, SerachMalitpleLocation, SearchMultipleLocations };
+module.exports = { getLocation, SearchMultipleLocation, SearchMultipleLocations };
