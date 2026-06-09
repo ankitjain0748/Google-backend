@@ -107,3 +107,308 @@ Opening Hours (if available): Business hours of the place.
 Reviews (if available): User reviews and feedback.
 
 Photos (if available): Images of the place uploaded by users.
+// Google an
+
+import { BetaAnalyticsDataClient } from "@google-analytics/data";
+import path from "path";
+
+const client = new BetaAnalyticsDataClient({
+  keyFilename: path.join(process.cwd(), "ga4.json"),
+});
+
+// Helper function for reports
+async function runReport({ startDate, endDate, dimensions = [], metrics = [] }) {
+  const [response] = await client.runReport({
+    property: `properties/${process.env.GA4_PROPERTY_ID}`,
+    dateRanges: [{ startDate, endDate }],
+    dimensions,
+    metrics,
+  });
+  return response;
+}
+
+export default async function handler(req, res) {
+  try {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+    const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+
+    // OPTIMIZED: Parallel execution with fewer calls
+    const [
+      todayData,           // ✅ Separate call for today's data
+      yesterdayData,
+      mainMetrics,         // Combined report for trends
+      thisMonthData,
+      lastMonthData,
+      thisYearData,
+      allTimeData,
+      topPages,
+      trafficSources,
+      devices,
+      cities,
+      dailyUsers,
+      hourlyUsers,
+      countries,
+      browsers,
+    ] = await Promise.all([
+      // ✅ TODAY'S DATA - Separate call for accurate today's stats
+      runReport({
+        startDate: "today",
+        endDate: "today",
+        metrics: [
+          { name: "activeUsers" },
+          { name: "newUsers" },
+          { name: "sessions" },
+          { name: "screenPageViews" },
+          { name: "averageSessionDuration" },
+          { name: "bounceRate" },
+        ],
+      }),
+      // Yesterday
+      runReport({
+        startDate: "yesterday",
+        endDate: "yesterday",
+        metrics: [{ name: "activeUsers" }, { name: "newUsers" }],
+      }),
+      // Main metrics for 30 days (for trends)
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        metrics: [
+          { name: "activeUsers" },
+          { name: "newUsers" },
+          { name: "sessions" },
+          { name: "screenPageViews" },
+          { name: "averageSessionDuration" },
+          { name: "bounceRate" },
+        ],
+      }),
+      // This month
+      runReport({
+        startDate: firstDayOfMonth.toISOString().split('T')[0],
+        endDate: "today",
+        metrics: [{ name: "activeUsers" }, { name: "newUsers" }],
+      }),
+      // Last month
+      runReport({
+        startDate: lastMonthStart.toISOString().split('T')[0],
+        endDate: lastMonthEnd.toISOString().split('T')[0],
+        metrics: [{ name: "activeUsers" }, { name: "newUsers" }],
+      }),
+      // This year
+      runReport({
+        startDate: firstDayOfYear.toISOString().split('T')[0],
+        endDate: "today",
+        metrics: [{ name: "activeUsers" }, { name: "newUsers" }, { name: "sessions" }],
+      }),
+      // All time
+      runReport({
+        startDate: "365daysAgo",
+        endDate: "today",
+        metrics: [{ name: "activeUsers" }, { name: "newUsers" }],
+      }),
+      // Top pages
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "pagePath" }, { name: "pageTitle" }],
+        metrics: [{ name: "activeUsers" }, { name: "screenPageViews" }, { name: "averageSessionDuration" }],
+      }),
+      // Traffic sources
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "sessionSource" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+      // Devices
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "deviceCategory" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+      // Cities
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "city" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+      // Daily users
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "date" }],
+        metrics: [{ name: "activeUsers" }, { name: "newUsers" }],
+      }),
+      // Hourly users
+      runReport({
+        startDate: "7daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "hour" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+      // Countries
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "country" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+      // Browsers
+      runReport({
+        startDate: "30daysAgo",
+        endDate: "today",
+        dimensions: [{ name: "browser" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+    ]);
+
+    // ✅ Extract TODAY'S data from todayData (not from mainMetrics)
+    const todayRow = todayData.rows?.[0];
+    const yesterdayRow = yesterdayData.rows?.[0];
+    const mainRows = mainMetrics.rows?.[0];
+    
+    // Calculate total for 30 days
+    const total30Days = mainMetrics.rows?.reduce((sum, row) => sum + Number(row.metricValues?.[0]?.value || 0), 0) || 0;
+    const avgDailyUsers = total30Days / 30;
+    
+    // Daily growth (today vs yesterday)
+    const dailyGrowth = ((Number(todayRow?.metricValues?.[0]?.value || 0) - Number(yesterdayRow?.metricValues?.[0]?.value || 0)) / (Number(yesterdayRow?.metricValues?.[0]?.value || 1))) * 100;
+    
+    // Weekly stats from last 7 days
+    const weeklyUsers = dailyUsers?.rows?.slice(-7).reduce((sum, row) => sum + Number(row.metricValues?.[0]?.value || 0), 0) || 0;
+    const previousWeekUsers = dailyUsers?.rows?.slice(-14, -7).reduce((sum, row) => sum + Number(row.metricValues?.[0]?.value || 0), 0) || 0;
+    const weeklyGrowth = previousWeekUsers > 0 ? ((weeklyUsers - previousWeekUsers) / previousWeekUsers) * 100 : 0;
+    
+    // Monthly growth
+    const monthlyGrowth = ((Number(thisMonthData.rows?.[0]?.metricValues?.[0]?.value || 0) - Number(lastMonthData.rows?.[0]?.metricValues?.[0]?.value || 0)) / (Number(lastMonthData.rows?.[0]?.metricValues?.[0]?.value || 1))) * 100;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        // ✅ TODAY'S DATA - Correctly from todayData
+        realtime: {
+          todayUsers: Number(todayRow?.metricValues?.[0]?.value || 0),
+          todayNewUsers: Number(todayRow?.metricValues?.[1]?.value || 0),
+          todaySessions: Number(todayRow?.metricValues?.[2]?.value || 0),
+          todayPageViews: Number(todayRow?.metricValues?.[3]?.value || 0),
+          todayAvgSessionDuration: Number(todayRow?.metricValues?.[4]?.value || 0).toFixed(0),
+          todayBounceRate: Number(todayRow?.metricValues?.[5]?.value || 0).toFixed(1),
+        },
+        
+        // Yesterday
+        yesterday: {
+          users: Number(yesterdayRow?.metricValues?.[0]?.value || 0),
+          newUsers: Number(yesterdayRow?.metricValues?.[1]?.value || 0),
+          dailyGrowth: dailyGrowth.toFixed(1),
+        },
+        
+        // Weekly
+        weekly: {
+          users: weeklyUsers,
+          avgDaily: Math.round(weeklyUsers / 7),
+          weeklyGrowth: weeklyGrowth.toFixed(1),
+        },
+        
+        // Monthly (Last 30 days)
+        monthly: {
+          users: total30Days,
+          sessions: mainMetrics.rows?.reduce((sum, row) => sum + Number(row.metricValues?.[2]?.value || 0), 0) || 0,
+          pageViews: mainMetrics.rows?.reduce((sum, row) => sum + Number(row.metricValues?.[3]?.value || 0), 0) || 0,
+          avgDaily: Math.round(avgDailyUsers),
+          monthlyGrowth: monthlyGrowth.toFixed(1),
+        },
+        
+        // This month vs last month
+        monthComparison: {
+          thisMonth: Number(thisMonthData.rows?.[0]?.metricValues?.[0]?.value || 0),
+          lastMonth: Number(lastMonthData.rows?.[0]?.metricValues?.[0]?.value || 0),
+          growth: monthlyGrowth.toFixed(1),
+          thisMonthNewUsers: Number(thisMonthData.rows?.[0]?.metricValues?.[1]?.value || 0),
+          lastMonthNewUsers: Number(lastMonthData.rows?.[0]?.metricValues?.[1]?.value || 0),
+        },
+        
+        // Yearly
+        yearly: {
+          users: Number(thisYearData.rows?.[0]?.metricValues?.[0]?.value || 0),
+          newUsers: Number(thisYearData.rows?.[0]?.metricValues?.[1]?.value || 0),
+          sessions: Number(thisYearData.rows?.[0]?.metricValues?.[2]?.value || 0),
+          avgMonthly: Math.round((thisYearData.rows?.[0]?.metricValues?.[0]?.value || 0) / (today.getMonth() + 1)),
+        },
+        
+        // All time
+        allTime: {
+          users: Number(allTimeData.rows?.[0]?.metricValues?.[0]?.value || 0),
+          newUsers: Number(allTimeData.rows?.[0]?.metricValues?.[1]?.value || 0),
+          totalDays: 365,
+        },
+        
+        // Detailed breakdowns
+        topPages: topPages.rows?.slice(0, 20).map((row) => ({
+          page: row.dimensionValues?.[0]?.value,
+          title: row.dimensionValues?.[1]?.value,
+          users: Number(row.metricValues?.[0]?.value || 0),
+          views: Number(row.metricValues?.[1]?.value || 0),
+          avgTimeOnPage: Number(row.metricValues?.[2]?.value || 0).toFixed(0),
+        })) || [],
+        
+        trafficSources: trafficSources.rows?.map((row) => ({
+          source: row.dimensionValues?.[0]?.value || "Direct",
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        devices: devices.rows?.map((row) => ({
+          device: row.dimensionValues?.[0]?.value,
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        cities: cities.rows?.slice(0, 20).map((row) => ({
+          city: row.dimensionValues?.[0]?.value || "Unknown",
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        countries: countries.rows?.map((row) => ({
+          country: row.dimensionValues?.[0]?.value,
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        browsers: browsers.rows?.map((row) => ({
+          browser: row.dimensionValues?.[0]?.value,
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        // Time series
+        dailyUsers: dailyUsers.rows?.map((row) => ({
+          date: row.dimensionValues?.[0]?.value,
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        hourlyUsers: hourlyUsers.rows?.map((row) => ({
+          hour: row.dimensionValues?.[0]?.value,
+          users: Number(row.metricValues?.[0]?.value || 0),
+        })) || [],
+        
+        // Summary
+        summary: {
+          totalUsersAllTime: Number(allTimeData.rows?.[0]?.metricValues?.[0]?.value || 0),
+          totalUsersThisYear: Number(thisYearData.rows?.[0]?.metricValues?.[0]?.value || 0),
+          totalUsersLast30Days: total30Days,
+          averageDailyUsers: Math.round(avgDailyUsers),
+          peakHour: hourlyUsers.rows?.reduce((max, row) => Number(row.metricValues?.[0]?.value || 0) > Number(max?.metricValues?.[0]?.value || 0) ? row : max, { metricValues: [{ value: 0 }] })?.dimensionValues?.[0]?.value || 0,
+          topSource: trafficSources.rows?.[0]?.dimensionValues?.[0]?.value || "Direct",
+          topDevice: devices.rows?.[0]?.dimensionValues?.[0]?.value || "Desktop",
+          topCity: cities.rows?.[0]?.dimensionValues?.[0]?.value || "Unknown",
+          topPage: topPages.rows?.[0]?.dimensionValues?.[0]?.value || "/",
+        },
+      },
+    });
+  } catch (error) {
+    console.error("GA API Error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+}
